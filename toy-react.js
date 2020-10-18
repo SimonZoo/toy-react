@@ -1,4 +1,3 @@
-import { compilation } from "webpack"
 
 const RENDER_TO_DOM = Symbol("render to dom")
 export class Component {
@@ -8,7 +7,7 @@ export class Component {
         this._root = null
         this._range = null
     }
-    setAttr(name, value) {
+    setAttribute(name, value) {
         this.props[name] = value
     }
 
@@ -28,13 +27,10 @@ export class Component {
 
     update() {
         let isSameNode = (oldNode, newNode) => {
-            if (oldType !== newNode.type) {
+
+            if (oldNode.type !== newNode.type) {
                 return false
             } 
-
-            if (Object.keys(oldNode.props).length > Object.keys(newNode.props).length) {
-                return false
-            }
 
             for(let name in newNode.props) {
                 if(newNode.props[name] !== oldNode.props[name]) {
@@ -42,7 +38,11 @@ export class Component {
                 }
             }
 
-            if (newNode.type == "#text") {
+            if (Object.keys(oldNode.props).length > Object.keys(newNode.props).length) {
+                return false
+            }
+
+            if (newNode.type === "#text") {
                 if (newNode.content !== oldNode.content) {
                     return false
                 } 
@@ -134,9 +134,9 @@ class ElementWrapper extends Component {
                 root.addEventListener(RegExp.$1.replace(/^[\s\S]/,c => c.toLowerCase()),value )
             } else {
                 if (name === "className") {
-                    root.setAttr("class", value)
+                    root.setAttribute("class", value)
                 } else {
-                    root.setAttr(name, value)
+                    root.setAttribute(name, value)
                 }
             }
         }
@@ -144,7 +144,7 @@ class ElementWrapper extends Component {
             this.vchildren = this.children.map(child => child.vdom)
         }
 
-        for (let child of this.vchiildren) {
+        for (let child of this.vchildren) {
             let childRange = document.createRange()
             childRange.setStart(root, root.childNodes.length)
             childRange.setEnd(root, root.childNodes.length)
@@ -193,7 +193,7 @@ export function createElement(type, attributes, ...children) {
     }
 
     for (let p in attributes) {
-        e.setAttr(p ,attributes[p])
+        e.setAttribute(p ,attributes[p])
     }
 
     let insertChildren = (children) => {
@@ -221,7 +221,7 @@ export function createElement(type, attributes, ...children) {
 export function render (component, parentElement) {
     let range = document.createRange()
     range.setStart(parentElement, 0)
-    range.setEnd(parentElement, parentElement.chiildNodes.length)
+    range.setEnd(parentElement, parentElement.childNodes.length)
     range.deleteContents()
     component[RENDER_TO_DOM](range)
 }
